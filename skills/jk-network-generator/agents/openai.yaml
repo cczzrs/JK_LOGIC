@@ -1,0 +1,4 @@
+interface:
+  display_name: "JK 节点网络构建与验证"
+  short_description: "根据算术、布尔逻辑或状态需求构建 JK 节点网络，并验证计算及事件行为"
+  default_prompt: "使用 $jk-network-generator 构建两个无符号 8bit 数相乘、输出 16bit 的 JK 节点网络，交付模型 JSON，并验证全部输入及连续发送的 FIFO 行为。"

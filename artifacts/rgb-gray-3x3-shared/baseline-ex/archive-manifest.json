@@ -1,0 +1,49 @@
+{
+  "purpose": "Original 512-node model before full ex optimization",
+  "files": [
+    {
+      "name": "README.md",
+      "sha256": "70af8a545e57faf73e19d7275d39f7d3e0b5d2a813cd108fd1a59d1800586490"
+    },
+    {
+      "name": "example-expected.json",
+      "sha256": "86f3a349c77ed9d8ccf06287fa9b6cd43200adac8ddc5cf791d527c5aadbabda"
+    },
+    {
+      "name": "example-input.json",
+      "sha256": "1c6338258ce37c9bd8fb6c2eac47e6b8d6b35c44779f46f9e00ecb6117ce378b"
+    },
+    {
+      "name": "example-run.json",
+      "sha256": "0726a66efef9207368da631f566b673629f4494f10d629a29cef8314629f1aee"
+    },
+    {
+      "name": "rgb-gray-216-72.shared.json",
+      "sha256": "d5b95015ae81a3ef76739150f6ca8d66cadb008fb0b89ef35a75697e7a30c740"
+    },
+    {
+      "name": "rgb-gray-216-72.shared.modelshow.json",
+      "sha256": "6f6b9c06d516120038c06cc08f4e3b2d0360c0e773f765a865ddc2e8edc98706"
+    },
+    {
+      "name": "rgb-gray-216-72.shared.modelshow.truth-table.json",
+      "sha256": "8c4450d5614a1a8bccf21e12d4333c19278cf26b0d04156ddc73ca71c83d14af"
+    },
+    {
+      "name": "rgb-gray-216-72.shared.modelshow.verification.json",
+      "sha256": "4482b03a3b1373cf14fa1beb5d511992eb1c7db7b3d63d160ca22e4f909ab7bc"
+    },
+    {
+      "name": "rgb-gray-216-72.shared.truth-table.json",
+      "sha256": "022e3fd6d62cb83aa04000524ad8d86cc6fd7379a4acee42e024159abdc3fcb8"
+    },
+    {
+      "name": "rgb-gray-216-72.shared.verification.json",
+      "sha256": "4658c9e2a6324d23004f5c19df5f96e4641362cb780f44ed0e01cd75c4df8da0"
+    },
+    {
+      "name": "verification-summary.json",
+      "sha256": "f37463e7f4df7bc66d2cc6bd0cad3e0ac01255cb498397feae3485dc25263106"
+    }
+  ]
+}

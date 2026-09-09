@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "model_md5": "2a1ba22a8ee77698807001d57f1ff0c9",
+  "operation": "mul",
+  "operand_bits": [
+    8,
+    8
+  ],
+  "output_bits": 16,
+  "nodes": 320,
+  "stateful_nodes": 0,
+  "self_feedback_nodes": 0,
+  "mode": "exhaustive",
+  "domain_combinations": "65536",
+  "truth_table_cases": 65536,
+  "repeated_send_cases": 3,
+  "executions": 20972480,
+  "peak_queue": 64,
+  "checks": [
+    "actual FIFO engine, no reset between vectors",
+    "fresh output publication exactly once per send",
+    "all output bits equal independent BigInt oracle",
+    "queue drained and arrival caches empty"
+  ],
+  "boundary": "Complete input vectors, FIFO drained before next send; bounded executions from declared initial state; no proof of other initial states, arbitrary interleaved/partial inputs, all possible feedback trajectories or global structural optimality"
+}

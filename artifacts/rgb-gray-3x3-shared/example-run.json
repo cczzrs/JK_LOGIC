@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "model_md5": "81956751edad7886863ecec4a1d9ac09",
+  "model_created_at": "2026-09-09T01:51:13.320Z",
+  "model_file_sha256": "3fb75915e5f82e9ed4d9f3a8d6284b11b7120537db19601b286416e621691f82",
+  "input": "example-input.json",
+  "grayscale_rows": [
+    [
+      0,
+      255,
+      77
+    ],
+    [
+      149,
+      29,
+      128
+    ],
+    [
+      226,
+      178,
+      106
+    ]
+  ],
+  "startup_executions": 2,
+  "startup_operation_executions": 4,
+  "frame_executions": 2791,
+  "frame_operation_executions": 18073,
+  "peak_queue": 217,
+  "output_publications_per_bit": 9,
+  "nodes": 512,
+  "total_state_bits": 309,
+  "static_ex_operation_sum": 2610,
+  "verified_at": "2026-09-09T01:51:39.976Z"
+}
