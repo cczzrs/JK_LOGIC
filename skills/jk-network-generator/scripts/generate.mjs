@@ -1,21 +1,14 @@
-import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { parseExpression } from './engine.mjs';
+import { parseExpression, createSnapshot } from './model.mjs';
+import { assertSeparateFiles } from './files.mjs';
+export { canonical, digest, metrics } from './model.mjs';
 
 export const SUPPORTED_OPERATIONS = Object.freeze(['mul', 'add', 'and', 'or', 'xor']);
-export const INPUT_PROTOCOL = 'Send every input bit, then drain FIFO before the next vector; no request isolation is implied.';
-// These descriptive values are retained for compatibility with existing model MD5s.
-// "registers" here names JK output-state nodes, not physical hardware.
-export const STATELESS_ARCHITECTURE = 'stateless DAG';
-export const STATEFUL_ARCHITECTURE = 'stateless arithmetic core with stateful self-feedback output registers';
+export const INPUT_PROTOCOL = 'Send every input bit, then drain Xi.FIFO and Qi.FIFO before the next vector; no request isolation is implied.';
+export const STATELESS_ARCHITECTURE = 'V4 input copies and stateless arithmetic DAG';
+export const STATEFUL_ARCHITECTURE = 'V4 input copies, stateless arithmetic DAG and saved output q';
 const assert = (ok, message) => { if (!ok) throw new Error(message); };
-export const canonical = x => Array.isArray(x)
-  ? '[' + x.map(canonical).join(',') + ']'
-  : x && typeof x === 'object'
-    ? '{' + Object.keys(x).sort().map(k => JSON.stringify(k) + ':' + canonical(x[k])).join(',') + '}'
-    : JSON.stringify(x);
-export const digest = x => createHash('md5').update(canonical(x)).digest('hex');
 export const fullWidth = (operation, aBits, bBits) => operation === 'mul'
   ? aBits + bBits : Math.max(aBits, bBits) + (operation === 'add' ? 1 : 0);
 export function unsignedContract(aBits, bBits, statefulOutput = false) {
@@ -29,20 +22,16 @@ export function unsignedContract(aBits, bBits, statefulOutput = false) {
     input_protocol: INPUT_PROTOCOL,
   };
 }
-export function metrics(nodes) {
-  const tokens = nodes.map(n => parseExpression(n.ex));
-  return {
-    jk_bits_max: nodes.length, jk_bits: nodes.length,
-    ex_source_max: Math.max(0, ...tokens.map(ts => new Set(ts.filter(t => t.source).map(t => t.source)).size)),
-    ex_operation_max: Math.max(0, ...tokens.map(ts => ts.length)),
-    ex_source_sum: tokens.reduce((sum, ts) => sum + ts.filter(t => t.source).length, 0),
-    ex_operation_sum: tokens.reduce((sum, ts) => sum + ts.length, 0),
-  };
+export const specificationPath = file => file.replace(/\.json$/i, '') + '.spec.json';
+export function arithmeticSpec(raw, operation, aBits, bBits, statefulOutput = false) {
+  return { model_md5: raw.md5, model_format_md5: raw.format_md5, operation,
+    a_bits: aBits, b_bits: bBits, output_bits: fullWidth(operation, aBits, bBits),
+    ...unsignedContract(aBits, bBits, statefulOutput) };
 }
 
-/** Boolean-operation builder. Signals are Xi / previously emitted Qi, or numeric 0/1.
- * Primitive expressions are stateless. finish() packages two unsigned operands
- * under the complete-vector/drain protocol; it is not a general state-machine encoder.
+/** Symbolic Boolean builder. Xi here are construction handles, NOT direct Xi
+ * references in the finished V4 computation nodes. finish() lowers them through
+ * stateful input copies and stateless bridges for the complete-vector protocol.
  */
 export class Builder {
   constructor(optimize = true) {
@@ -56,7 +45,7 @@ export class Builder {
     assert(x === 0 || x === 1 || typeof x === 'string' && /^[XQ](0|[1-9]\d*)$/.test(x), `Invalid signal ${String(x)}; expected numeric 0/1, Xi or existing Qi`);
     if (typeof x === 'string') {
       const index = Number(x.slice(1));
-      assert(Number.isSafeInteger(index), `Invalid signal index ${x}`);
+      assert(Number.isSafeInteger(index) && x === x[0] + index, `Invalid signal index ${x}`);
       if (x.startsWith('Q')) assert(index < this.nodes.length && this.nodes[index]?.id === x, `Unknown Builder signal ${x}`);
       else this.referencedInputs.add(x);
     }
@@ -168,18 +157,10 @@ export class Builder {
       this.signal(x);
       if (typeof x === 'string' && x.startsWith('X')) assert(Number(x.slice(1)) < inputBits, `Input signal ${x} outside declared operands`);
     }
-    // Constants need an input arrival on every complete-vector send. A pure J0
-    // expression would publish only at initialization.
+    // Keep a triggering source: literal-only Q nodes are forbidden by JKRD.
     let outputs = bits.map(x => typeof x === 'number'
-      ? this.emit('J0K(X0)J0' + (x ? 'K1' : ''))
+      ? this.emit('J0J(X0)' + (x ? 'K1' : ''))
       : x.startsWith('X') ? this.emit('J0' + this.token('K', x)) : x);
-    const stateIds = [];
-    if (statefulOutput) outputs = outputs.map(source => {
-      const id = 'Q' + this.nodes.length;
-      this.nodes.push({ id, ex: `K(${id})K(${source})` });
-      stateIds.push(id);
-      return id;
-    });
     const byId = new Map(this.nodes.map(n => [n.id, n])), live = new Set();
     const visit = id => {
       if (live.has(id)) return;
@@ -188,20 +169,35 @@ export class Builder {
     };
     outputs.forEach(visit);
     const used = this.nodes.filter(n => live.has(n.id));
-    const remap = new Map(used.map((n, i) => [n.id, 'Q' + i]));
-    const nodes = used.map(n => ({ id: remap.get(n.id), ex: n.ex.replace(/Q\d+/g, source => remap.get(source)) }));
-    const raw = {
+    const activeInputs = new Set(used.flatMap(n => parseExpression(n.ex).flatMap(t => t.source?.startsWith('X') ? [t.source] : [])));
+    const remap = new Map(used.map((n, i) => [n.id, 'Q' + (2 * inputBits + i)]));
+    const nodes = [
+      ...Array.from({ length: inputBits }, (_, i) => ({ id: 'Q' + i, ex: `J0K(X${i})` })),
+      ...Array.from({ length: inputBits }, (_, i) => ({ id: 'Q' + (inputBits + i), ex: `J0K(Q${i})` })),
+      ...used.map(n => ({ id: remap.get(n.id), ex: n.ex.replace(/[XQ]\d+/g, source => source.startsWith('X') ? 'Q' + (inputBits + Number(source.slice(1))) : remap.get(source)) })),
+    ];
+    outputs = outputs.map(q => remap.get(q));
+    const unused = Array.from({ length: inputBits }, (_, i) => i).filter(i => !activeInputs.has('X' + i));
+    if (unused.length) {
+      // Retain every declared input's event dependency without adding outputs.
+      // All sources here are stateless; each contributes exactly one arrival.
+      const id = 'Q' + nodes.length;
+      nodes.push({ id, ex: 'J0' + unused.map(i => `J(Q${inputBits + i})`).join('') + `K(${outputs[0]})` });
+      outputs[0] = id;
+    }
+    const stateIds = Array.from({ length: inputBits }, (_, i) => 'Q' + i);
+    if (statefulOutput) outputs = outputs.map(source => {
+      const id = 'Q' + nodes.length;
+      nodes.push({ id, ex: `J0K(${source})` });
+      stateIds.push(id);
+      return id;
+    });
+    const raw = createSnapshot({
       name: `${spec.operation}-${spec.a_bits}x${spec.b_bits}-unsigned-${spec.output_bits}bit`,
-      format: 'jk-logic-structure-V3.1.0', created_at: new Date().toISOString(),
-      input_bits: inputBits, output_bits: spec.output_bits, ...metrics(nodes), nodes,
-      initial_q: { '0': stateIds.map(id => remap.get(id)), '1': [] },
-      q_y: outputs.map((q, i) => ({ ['Y' + i]: remap.get(q) })),
-      inputs: Array.from({ length: inputBits }, (_, i) => ({ ['X' + i]: 'X' + i })),
-      outputs: bits.map((_, i) => ({ ['Y' + i]: 'Y' + i })),
-      spec: { ...spec, ...contract },
-      hash_contract: 'md5 = lowercase MD5 of UTF-8 recursively key-sorted JSON of {nodes, initial_q, q_y, spec}; array order retained',
-    };
-    raw.md5 = digest({ nodes: raw.nodes, initial_q: raw.initial_q, q_y: raw.q_y, spec: raw.spec });
+      input_bits: inputBits, nodes, initial_q: { '0': stateIds, '1': [] },
+      q_y: outputs.map((q, i) => ({ ['Y' + i]: q })),
+    });
+    this.specification = { ...spec, ...contract, model_md5: raw.md5, model_format_md5: raw.format_md5 };
     return raw;
   }
 }
@@ -234,7 +230,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const [op, a, b, file, ...flags] = process.argv.slice(2);
     assert(file && flags.every(f => ['--no-opt', '--stateful-output'].includes(f)), 'Usage: node generate.mjs mul|add|and|or|xor A_BITS B_BITS OUTPUT.json [--no-opt] [--stateful-output]');
     const model = generate(op, Number(a), Number(b), !flags.includes('--no-opt'), flags.includes('--stateful-output'));
+    const specFile = specificationPath(file);
+    assertSeparateFiles(file, specFile);
     writeFileSync(file, JSON.stringify(model, null, 2) + '\n');
-    console.error(`Wrote ${file}: ${model.nodes.length} JK nodes`);
+    writeFileSync(specFile, JSON.stringify(arithmeticSpec(model, op, Number(a), Number(b), flags.includes('--stateful-output')), null, 2) + '\n');
+    console.error(`Wrote ${file}: ${model.nodes.length} JK nodes; arithmetic specification: ${specFile}`);
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

@@ -1,0 +1,75 @@
+{
+  "verifier": "rgb-gray-v4-fifo-v1",
+  "model": {
+    "md5": "7cc2e8f48f53dd4017c3e3dc08ae2eb0",
+    "format_md5": "8d84caa789a3c11dd4e2aea2fc7194f6"
+  },
+  "rule_version": "V4.0.0",
+  "rule": {
+    "path": "/Users/cong/Desktop/VSCode/CODEX/JK/docs/JKRD.md",
+    "sha256": "0680ddc7f2391d3f651a6cbea752a4f5cbad1545a21d812ba176df5192d95564"
+  },
+  "implementation": {
+    "verifier_sha256": "2e1ccc0c37bdcf6f0ec361d87eaac3a2cd632a71cf80b1cbbd0106bc632ca158",
+    "engine_sha256": "bb98914976f7b0beb2888fa89ed21f2d6c057ddd62490ae76d0edd9e35f83574",
+    "model_validator_sha256": "bbce9011f358c6775cbfa67ef4433cafb9c00964b4564da7bfe6cb7bcac39207"
+  },
+  "passed": true,
+  "verified_at": "2026-10-15T00:03:37.426Z",
+  "elapsed_seconds": 113.478612708,
+  "random_seed": 1470206979,
+  "completed_frames": 10933,
+  "coverage": {
+    "random_frames": 10000,
+    "edge_frames": 694,
+    "repeated_frames": 8,
+    "partial_frames": 12,
+    "missing_completion_frames": 216,
+    "reset_frames": 2,
+    "safe_snapshot_frames": 1,
+    "safe_snapshot_replayed_suffixes": 1
+  },
+  "metrics": {
+    "nodes": 677,
+    "saved_states": 306,
+    "static_operations": 2763,
+    "initialization_executions": 0,
+    "executions_per_frame": 3226,
+    "operations_per_frame": 74163,
+    "output_events_per_bit_per_frame": 9,
+    "executions": 35272824,
+    "operations": 810878972,
+    "task_parameter_checks": 743853900,
+    "queue_priority_checks": 35272824,
+    "input_copy_checks": 2361658,
+    "phase_checks": 98406,
+    "selector_checks": 885654,
+    "selected_input_checks": 2361744,
+    "output_transition_checks": 7085232,
+    "output_events": 7085232,
+    "peak_queue": 256,
+    "peak_input_queue": 216,
+    "peak_compute_queue": 256
+  },
+  "snapshot": {
+    "checked_boundary": "All input copies and padded counter tasks complete; sole queued first-phase task; empty arrival collections",
+    "continuation_trace_equal": true,
+    "arbitrary_checkpoint_continuity_proven": false,
+    "excluded_fields": [
+      "external Xi current values",
+      "uncollected stateless-source arrival collections",
+      "external Yi event history"
+    ]
+  },
+  "boundary": "Exactly one event per Xi per frame; arbitrary unique order and partition, with both FIFOs drained before the next frame. Duplicate or overlapping frames are not supported by this application protocol. Arithmetic checked against independent integer oracle; no global-optimality claim.",
+  "files": {
+    "model": {
+      "path": "/Users/cong/Desktop/VSCode/CODEX/JK_LOGIC/artifacts/rgb-gray-v4/rgb-gray-216-72.json",
+      "sha256": "229241c38e2971d3a2b3366a143c07caaac1f4feb71395dc105c0c2865c2cf84"
+    },
+    "specification": {
+      "path": "/Users/cong/Desktop/VSCode/CODEX/JK_LOGIC/artifacts/rgb-gray-v4/rgb-gray-216-72.spec.json",
+      "sha256": "d0806ac593ee01c67e2042c9d906505cb35e49232106357fc297c433a4a41859"
+    }
+  }
+}

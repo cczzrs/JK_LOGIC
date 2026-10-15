@@ -1,0 +1,15 @@
+{
+  "model_md5": "235713a7739b7ae16469d107fbcff702",
+  "model_format_md5": "62d247f3dccb0866c1550f4a70df70c8",
+  "operation": "mul",
+  "a_bits": 8,
+  "b_bits": 8,
+  "output_bits": 16,
+  "architecture": "V4 input copies and stateless arithmetic DAG",
+  "signed": false,
+  "bit_order": "LSB-first",
+  "a_inputs": "X0..X7",
+  "b_inputs": "X8..X15",
+  "output_encoding": "unsigned binary; Y0 is LSB",
+  "input_protocol": "Send every input bit, then drain Xi.FIFO and Qi.FIFO before the next vector; no request isolation is implied."
+}

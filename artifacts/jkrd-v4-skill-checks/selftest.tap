@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: strict EX grammar consumes every character; only numeric IDs are allowed
+ok 1 - strict EX grammar consumes every character; only numeric IDs are allowed
+  ---
+  duration_ms: 0.865833
+  type: 'test'
+  ...
+# Subtest: both fingerprints reproduce the independently published JKRD snapshot example
+ok 2 - both fingerprints reproduce the independently published JKRD snapshot example
+  ---
+  duration_ms: 2.229584
+  type: 'test'
+  ...
+# Subtest: strict schema rejects missing and extra fields, old formats, bad metadata and timestamps
+ok 3 - strict schema rejects missing and extra fields, old formats, bad metadata and timestamps
+  ---
+  duration_ms: 3.407667
+  type: 'test'
+  ...
+# Subtest: input copies, source/fanout bounds, propagation and DAG constraints are structural requirements
+ok 4 - input copies, source/fanout bounds, propagation and DAG constraints are structural requirements
+  ---
+  duration_ms: 1.18625
+  type: 'test'
+  ...
+# Subtest: FIFOS validation requires exact target ownership and exact stateless payload keys
+ok 5 - FIFOS validation requires exact target ownership and exact stateless payload keys
+  ---
+  duration_ms: 1.094708
+  type: 'test'
+  ...
+# Subtest: restored input tasks skip unreadable Xi without even J0; zero is readable and tasks are retained
+ok 6 - restored input tasks skip unreadable Xi without even J0; zero is readable and tasks are retained
+  ---
+  duration_ms: 0.893875
+  type: 'test'
+  ...
+# Subtest: per-Xi tasks, numeric enqueue order and priority yield two complete ordinary executions
+ok 7 - per-Xi tasks, numeric enqueue order and priority yield two complete ordinary executions
+  ---
+  duration_ms: 0.342583
+  type: 'test'
+  ...
+# Subtest: each task reads latest Xi rather than arrival history; input tasks preempt pending ordinary tasks
+ok 8 - each task reads latest Xi rather than arrival history; input tasks preempt pending ordinary tasks
+  ---
+  duration_ms: 0.323
+  type: 'test'
+  ...
+# Subtest: self q is fixed before EX and never creates a self-triggered task
+ok 9 - self q is fixed before EX and never creates a self-triggered task
+  ---
+  duration_ms: 0.22
+  type: 'test'
+  ...
+# Subtest: q= updates saved state silently; readers use latest q and outputs carry the event value
+ok 10 - q= updates saved state silently; readers use latest q and outputs carry the event value
+  ---
+  duration_ms: 0.374167
+  type: 'test'
+  ...
+# Subtest: filtered stateless arrivals do not become zero events; incomplete arrivals survive drained queues
+ok 11 - filtered stateless arrivals do not become zero events; incomplete arrivals survive drained queues
+  ---
+  duration_ms: 0.390542
+  type: 'test'
+  ...
+# Subtest: each target owns its arrival set; new groups cannot mutate old tasks or be cleared by them
+ok 12 - each target owns its arrival set; new groups cannot mutate old tasks or be cleared by them
+  ---
+  duration_ms: 0.340458
+  type: 'test'
+  ...
+# Subtest: restored old task leaves next-group arrivals intact and snapshot omits incomplete arrivals/Xi
+ok 13 - restored old task leaves next-group arrivals intact and snapshot omits incomplete arrivals/Xi
+  ---
+  duration_ms: 0.707167
+  type: 'test'
+  ...
+# Subtest: snapshot preserves current q, ordered duplicate tasks and latched payloads at a task boundary
+ok 14 - snapshot preserves current q, ordered duplicate tasks and latched payloads at a task boundary
+  ---
+  duration_ms: 0.359375
+  type: 'test'
+  ...
+# Subtest: partial send reads initialized input copies; invalid/empty/unknown submits mutate nothing
+ok 15 - partial send reads initialized input copies; invalid/empty/unknown submits mutate nothing
+  ---
+  duration_ms: 0.225959
+  type: 'test'
+  ...
+# Subtest: q=0 filtering and repeated source references produce one event relation per source
+ok 16 - q=0 filtering and repeated source references produce one event relation per source
+  ---
+  duration_ms: 0.183792
+  type: 'test'
+  ...
+# Subtest: five arithmetic generators, both optimization modes and saved outputs pass bounded exhaustive domains
+ok 17 - five arithmetic generators, both optimization modes and saved outputs pass bounded exhaustive domains
+  ---
+  duration_ms: 176.437833
+  type: 'test'
+  ...
+# Subtest: 32-bit multiplication preserves all 64 result bits on explicit samples
+ok 18 - 32-bit multiplication preserves all 64 result bits on explicit samples
+  ---
+  duration_ms: 1685.168625
+  type: 'test'
+  ...
+# Subtest: Builder constants keep event dependencies, preserve unused declared ports and reject conflicting specs
+ok 19 - Builder constants keep event dependencies, preserve unused declared ports and reject conflicting specs
+  ---
+  duration_ms: 0.51325
+  type: 'test'
+  ...
+# Subtest: function verification binds the external spec and reports incorrect output mappings
+ok 20 - function verification binds the external spec and reports incorrect output mappings
+  ---
+  duration_ms: 0.40525
+  type: 'test'
+  ...
+# Subtest: CLIs reread V4 files and protect both model and specification from report aliases
+ok 21 - CLIs reread V4 files and protect both model and specification from report aliases
+  ---
+  duration_ms: 317.620958
+  type: 'test'
+  ...
+# Subtest: canonical source resolution follows project metadata and rejects a changed rule version
+ok 22 - canonical source resolution follows project metadata and rejects a changed rule version
+  ---
+  duration_ms: 1.492458
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2252.200208

@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "verified_at": "2026-10-15T00:01:50.024Z",
+  "model": {
+    "md5": "7cc2e8f48f53dd4017c3e3dc08ae2eb0",
+    "format_md5": "8d84caa789a3c11dd4e2aea2fc7194f6",
+    "file_sha256": "229241c38e2971d3a2b3366a143c07caaac1f4feb71395dc105c0c2865c2cf84"
+  },
+  "specification_sha256": "d0806ac593ee01c67e2042c9d906505cb35e49232106357fc297c433a4a41859",
+  "checker_sha256": "c6bc536074f72e275dc77ef53fd6030a26473b0b53aa5ec1491ea40b2fedb1fd",
+  "verifier_sha256": "2e1ccc0c37bdcf6f0ec361d87eaac3a2cd632a71cf80b1cbbd0106bc632ca158",
+  "generator_sha256": "fd421a2757bfdbaa59103b9ad85b584b3a4111e5dc42867627f83c2d458d09e5",
+  "negative_cases": [
+    {
+      "name": "output-holds-old",
+      "rejected": true,
+      "reason": "Output Q413 next-state oracle failed",
+      "phase": "repeated",
+      "mutated_model": {
+        "md5": "49c09b38e6658e572f81cd6eb431cb1c",
+        "format_md5": "b401a8278255d2cbeab6f175a0f91d3b"
+      }
+    },
+    {
+      "name": "last-selector-inverted",
+      "rejected": true,
+      "reason": "Inactive selector Q242 wrong at round 0",
+      "phase": "repeated",
+      "mutated_model": {
+        "md5": "371eb326050aef3f40410df43387664e",
+        "format_md5": "9b69a40ba409e62315fd2887f07c6411"
+      }
+    },
+    {
+      "name": "padding-publishes-zero",
+      "rejected": true,
+      "reason": "Padding node must always publish one",
+      "phase": "repeated",
+      "mutated_model": {
+        "md5": "6218488cad93dfaffa2827f82fcc5922",
+        "format_md5": "ea2f3b6164e57f5e34bf9ef2da0e02d1"
+      }
+    },
+    {
+      "name": "one-delay-per-gap-removed",
+      "rejected": true,
+      "reason": "Next selector arrived before prior gray outputs were all published",
+      "phase": "repeated",
+      "mutated_model": {
+        "md5": "2cccaf2401acd406e8abd83caa34eb93",
+        "format_md5": "7ac20087c5a8fa32ff08a12d37d01c12"
+      }
+    }
+  ],
+  "boundary": "Four targeted mutations of the final structure; not a general mutation score or whole-project regression."
+}

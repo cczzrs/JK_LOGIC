@@ -1,0 +1,95 @@
+{
+  "contract": "JKRD V4.0.0",
+  "scope": "Targeted skill generation, validation, execution, snapshot and installation checks",
+  "canonical_rules": "/Users/cong/Desktop/VSCode/CODEX/JK/docs/JKRD.md",
+  "skill_format_valid": true,
+  "local_document_links_resolved": 4,
+  "interface_metadata_valid": true,
+  "selftest": {
+    "tests": 22,
+    "pass": 22,
+    "fail": 0
+  },
+  "arithmetic_verification": [
+    {
+      "report": "mul-8x8-stateful.verification.json",
+      "passed": true,
+      "model_md5": "81209f204ed15027224357bcfec05f81",
+      "model_format_md5": "a1685a2d272c5498efb884492ba60f4a",
+      "truth_table_cases": 65536,
+      "repeated_send_cases": 3,
+      "reset_cases": 5,
+      "reload_cases": 5
+    },
+    {
+      "report": "mul-8x8.verification.json",
+      "passed": true,
+      "model_md5": "235713a7739b7ae16469d107fbcff702",
+      "model_format_md5": "62d247f3dccb0866c1550f4a70df70c8",
+      "truth_table_cases": 65536,
+      "repeated_send_cases": 3,
+      "reset_cases": 5,
+      "reload_cases": 5
+    }
+  ],
+  "installed_skill": {
+    "path": "/Users/cong/.codex/skills/jk-network-generator",
+    "matching_files": 13,
+    "smoke_test": {
+      "passed": true,
+      "model_md5": "cd563558efad2a2bc6c6029212ab1735",
+      "model_format_md5": "6de39a8dc3370c9d754c9213331be2e4",
+      "specification_md5": "c447fa08954ac09d1cac72ab995f73d1",
+      "operation": "xor",
+      "operand_bits": [
+        2,
+        2
+      ],
+      "output_bits": 2,
+      "nodes": 10,
+      "stateful_nodes": 4,
+      "self_reference_nodes": 0,
+      "mode": "exhaustive",
+      "domain_combinations": "16",
+      "truth_table_cases": 16,
+      "repeated_send_cases": 3,
+      "reset_cases": 5,
+      "reload_cases": 5,
+      "executions": 290,
+      "peak_queue": 4,
+      "checks": [
+        "actual Xi.FIFO/Qi.FIFO engine, no reset between truth-table/sample and repeated-send vectors",
+        "fresh output publication exactly once per send",
+        "all output bits equal independent BigInt oracle",
+        "queue drained and arrival caches empty",
+        "reset restores initial runtime state, followed by five boundary vectors",
+        "JSON serialization/reparse and recompilation, followed by five boundary vectors"
+      ],
+      "boundary": "JKRD V4 static snapshots; complete input vectors, both FIFOs drained before the next send; bounded continuous executions from declared initial state. No proof of arbitrary interleaving, all state trajectories, full runtime checkpoint continuity or global optimality."
+    },
+    "previous_version_backup": "/private/tmp/jk-skill-v4-installed-backup-_96zfowa/jk-network-generator"
+  },
+  "delivery_files_sha256": {
+    "SKILL.md": "037ab3576f326d3968e1fb1821373f7ad9093675f275ea2d7be0c4c03c44ba0d",
+    "agents/openai.yaml": "8dae27196e807c98e452f049457d9cc8653679f9e3ba20fd5e7d1d36ea7b1a06",
+    "references/contract.md": "d709c07943382c123d53b8d3f713f6cf4a97308f8355c4b10ae6a538647364db",
+    "references/source.json": "e4e3d44d0e30dad13073979ee321c5489cfbe9b9947f31c093e6536298e677dc",
+    "references/synthesis.md": "d2de03bf266d94705ed12d8521d7042778e146e5a654db23c17e85843b60f17b",
+    "scripts/engine.mjs": "bb98914976f7b0beb2888fa89ed21f2d6c057ddd62490ae76d0edd9e35f83574",
+    "scripts/files.mjs": "a49ab1ee236f109acb9d3a1d1c9cd986ab9ea4bf1a804d8769bcc7312178951d",
+    "scripts/generate.mjs": "dcd332beffce22e11928d0e156070caa330893de068d3e7d898ad69de97c8072",
+    "scripts/model.mjs": "bbce9011f358c6775cbfa67ef4433cafb9c00964b4564da7bfe6cb7bcac39207",
+    "scripts/selftest.mjs": "c7cbd128ed1073fb3b2d07d3bc1109f856e6ea6d5796d7adcc7e15ea2b421413",
+    "scripts/source.mjs": "c28162c99387cca03c989be4c9f5407ec8a9ba8fd5b39c7ab3251405f851eb3e",
+    "scripts/validate.mjs": "816ab4d772efcbf17ada49f9e5cc5bf4357304813fee2930e416e06b175fda39",
+    "scripts/verify.mjs": "516d40cbf1d7a1f1929f59fa3f6394d34e55c7a4e202acacf2861d4de5fddea5"
+  },
+  "not_covered": [
+    "Repository-wide regression",
+    "Other consumers such as ModelShow and JK_NET",
+    "Historical RGB/vision model migration",
+    "Dynamic node management",
+    "Arbitrary state/interleaving equivalence or global optimality"
+  ],
+  "git_commit_created": false
+}

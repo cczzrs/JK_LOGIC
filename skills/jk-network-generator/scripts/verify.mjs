@@ -1,58 +1,36 @@
-import { existsSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, resolve } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { assertSeparateFiles } from './files.mjs';
 import { pathToFileURL } from 'node:url';
 import { compileModel, JKEngine } from './engine.mjs';
 import {
-  digest, metrics, fullWidth, unsignedContract, SUPPORTED_OPERATIONS,
+  digest, fullWidth, unsignedContract, SUPPORTED_OPERATIONS, specificationPath,
   STATELESS_ARCHITECTURE, STATEFUL_ARCHITECTURE,
 } from './generate.mjs';
 
 const assert = (ok, message) => { if (!ok) throw new Error(message); };
-const BOUNDARY = 'Complete input vectors, FIFO drained before next send; bounded executions from declared initial state; no proof of other initial states, arbitrary interleaved/partial inputs, all possible feedback trajectories or global structural optimality';
+const BOUNDARY = 'JKRD V4 static snapshots; complete input vectors, both FIFOs drained before the next send; bounded continuous executions from declared initial state. No proof of arbitrary interleaving, all state trajectories, full runtime checkpoint continuity or global optimality.';
 
 function checkArchitecture(model, architecture) {
   assert(typeof architecture === 'string' && architecture.trim().length > 0, 'Missing spec.architecture');
-  // The two built-in labels make specific structural claims. Other labels are
-  // allowed for custom models; numerical/event checks still apply to them.
   if (![STATELESS_ARCHITECTURE, STATEFUL_ARCHITECTURE].includes(architecture)) return;
-  const states = model.nodes.filter(n => n.initial !== null);
-  if (architecture === STATELESS_ARCHITECTURE) assert(states.length === 0, 'Architecture stateless DAG contains stateful nodes');
+  const states = model.nodes.filter(n => n.initial !== null && !n.input);
+  if (architecture === STATELESS_ARCHITECTURE) assert(states.length === 0, 'Arithmetic DAG contains unexpected saved state');
   else {
     const outputSources = new Set(model.outputs.map(o => o.source));
-    assert(states.length === model.outputs.length && outputSources.size === states.length && states.every(n => outputSources.has(n.id)), 'Architecture output-state nodes do not match output mappings');
+    assert(states.length === model.outputs.length && outputSources.size === states.length && states.every(n => outputSources.has(n.id)), 'Saved output nodes do not match output mappings');
     for (const n of states) {
-      const [self, source] = n.tokens;
-      assert(n.initial === 0 && n.tokens.length === 2 && self.op === 'K' && self.source === n.id && source.op === 'K' && source.source?.startsWith('Q') && model.byId.get(source.source)?.[0].initial === null,
-        `Architecture output-state node ${n.id} must initialize to 0 and execute K(self)K(stateless source)`);
+      const [reset, source] = n.tokens;
+      assert(n.initial === 0 && n.tokens.length === 2 && reset.text === 'J0' && source.op === 'K' && source.source?.startsWith('Q') && model.byId.get(source.source)[0].initial === null,
+        `Saved output ${n.id} must initialize to 0 and execute J0K(stateless source)`);
     }
   }
-  const visiting = new Set(), visited = new Set();
-  const visit = n => {
-    assert(!visiting.has(n.id), 'Architecture stateless core contains a cycle');
-    if (visited.has(n.id)) return;
-    visiting.add(n.id);
-    for (const id of n.sources.filter(s => s.startsWith('Q'))) {
-      const source = model.byId.get(id)[0];
-      assert(source.initial === null, `Architecture stateless core reads stateful source ${id}`);
-      visit(source);
-    }
-    visiting.delete(n.id); visited.add(n.id);
-  };
-  for (const n of model.nodes.filter(n => n.initial === null)) visit(n);
 }
 
-/** Validate the built-in two-operand unsigned verification profile.
- * compileModel() supports a broader model format; passing this validator does
- * not establish numerical correctness, termination, or general state behavior.
- */
-export function validate(raw) {
+/** Full V4 validation plus the separate two-operand arithmetic profile. */
+export function validate(raw, spec) {
   const model = compileModel(raw);
-  assert(model.issues.length === 0, model.issues.join(';'));
-  assert(model.nodes.every(n => !n.errors.length), 'Invalid nodes: ' + model.nodes.filter(n => n.errors.length).map(n => n.id + ':' + n.errors.join(',')).join(';'));
-  assert(model.outputs.every(o => !o.error), 'Invalid output mapping');
-  assert(model.nodes.every(n => n.sources.length > 0), 'Pure constant nodes publish only at initialization; use an input-anchored constant for repeatable arithmetic');
-  const spec = raw.spec;
-  assert(spec && spec.signed === false && spec.bit_order === 'LSB-first', 'Missing unsigned LSB-first spec');
+  assert(spec && spec.signed === false && spec.bit_order === 'LSB-first', 'Missing separate unsigned LSB-first spec; use MODEL.spec.json or --spec FILE');
+  assert(spec.model_md5 === raw.md5 && spec.model_format_md5 === raw.format_md5, 'Specification is not bound to this snapshot');
   assert(SUPPORTED_OPERATIONS.includes(spec.operation), 'Unsupported independent oracle');
   assert([spec.a_bits, spec.b_bits].every(n => Number.isInteger(n) && n >= 1 && n <= 32), 'Invalid operand width');
   const width = fullWidth(spec.operation, spec.a_bits, spec.b_bits);
@@ -61,12 +39,7 @@ export function validate(raw) {
   for (const [key, value] of Object.entries(unsignedContract(spec.a_bits, spec.b_bits))) {
     if (key !== 'architecture') assert(spec[key] === value, `Unsupported spec.${key}; expected ${JSON.stringify(value)}`);
   }
-  assert(JSON.stringify(raw.inputs) === JSON.stringify(Array.from({ length: raw.input_bits }, (_, i) => ({ ['X' + i]: 'X' + i }))), 'Input metadata mapping mismatch');
-  assert(JSON.stringify(raw.outputs) === JSON.stringify(Array.from({ length: width }, (_, i) => ({ ['Y' + i]: 'Y' + i }))), 'Output metadata mapping mismatch');
-  assert(model.inputs.every(x => Number(x.slice(1)) < raw.input_bits), 'Input index outside declared operands');
-  assert(JSON.stringify(model.outputs.map(o => o.id)) === JSON.stringify(Array.from({ length: width }, (_, i) => 'Y' + i)), 'Missing or extra output bits');
-  for (const [key, value] of Object.entries(metrics(raw.nodes))) assert(raw[key] === value, 'Wrong metadata: ' + key);
-  assert(raw.md5 === digest({ nodes: raw.nodes, initial_q: raw.initial_q, q_y: raw.q_y, spec: raw.spec }), 'Model MD5 mismatch');
+  assert(Object.values(raw.FIFOS).every(q => q.length === 0), 'Arithmetic verification requires an initial snapshot with empty FIFOS; validate resumed tasks with a dedicated state/event oracle');
   checkArchitecture(model, spec.architecture);
   return model;
 }
@@ -86,17 +59,17 @@ export function expected(operation, a, b) {
  * Throws on failure; error.report contains a serializable partial result for CLI
  * output and callers that need coverage or a failing input.
  */
-export function verify(raw, { samples = null } = {}) {
+export function verify(raw, { samples = null, spec } = {}) {
   const coverage = { truth_table_cases: 0, repeated_send_cases: 0, reset_cases: 0, reload_cases: 0 };
   let phase = 'validation', counterexample = null, executions = 0, peak = 0;
   const mode = samples === null ? 'exhaustive' : 'sampled';
   let combinations = null;
   try {
-    const model = validate(raw), spec = raw.spec, totalBits = spec.a_bits + spec.b_bits;
+    const model = validate(raw, spec), totalBits = spec.a_bits + spec.b_bits;
     combinations = 1n << BigInt(totalBits);
     assert(samples !== null || totalBits <= 16, 'Exhaustive domain exceeds 65,536; explicitly request --samples N, or implement a SAT/miter proof');
     if (samples !== null) assert(Number.isInteger(samples) && samples > 0 && samples <= 1000000, 'samples must be 1..1000000');
-    const engineOptions = { historyLimit: 0, queueLimit: Math.max(10000, model.nodes.length * 2) };
+    const engineOptions = { historyLimit: 0 };
     let engine = new JKEngine(model, engineOptions);
     const aMask = (1n << BigInt(spec.a_bits)) - 1n, bMask = (1n << BigInt(spec.b_bits)) - 1n;
     const seen = new Set();
@@ -160,16 +133,16 @@ export function verify(raw, { samples = null } = {}) {
     for (const [a, b] of boundaryVectors) check(a, b, 'reset_cases');
     phase = 'reload';
     const reloaded = JSON.parse(JSON.stringify(raw));
-    engine = new JKEngine(validate(reloaded), engineOptions);
+    engine = new JKEngine(validate(reloaded, spec), engineOptions);
     for (const [a, b] of boundaryVectors) check(a, b, 'reload_cases');
     return {
-      passed: true, model_md5: raw.md5, operation: spec.operation,
+      passed: true, model_md5: raw.md5, model_format_md5: raw.format_md5, specification_md5: digest(spec), operation: spec.operation,
       operand_bits: [spec.a_bits, spec.b_bits], output_bits: raw.output_bits, nodes: model.nodes.length,
       stateful_nodes: model.nodes.filter(n => n.initial !== null).length,
-      self_feedback_nodes: model.nodes.filter(n => n.sources.includes(n.id)).length,
+      self_reference_nodes: model.nodes.filter(n => n.sources.includes(n.id)).length,
       mode, domain_combinations: combinations.toString(), ...coverage, executions, peak_queue: peak,
       checks: [
-        'actual FIFO engine, no reset between truth-table/sample and repeated-send vectors',
+        'actual Xi.FIFO/Qi.FIFO engine, no reset between truth-table/sample and repeated-send vectors',
         'fresh output publication exactly once per send',
         'all output bits equal independent BigInt oracle',
         'queue drained and arrival caches empty',
@@ -181,7 +154,7 @@ export function verify(raw, { samples = null } = {}) {
   } catch (error) {
     error.report = {
       passed: false, model_md5: typeof raw?.md5 === 'string' ? raw.md5 : null,
-      operation: raw?.spec?.operation ?? null, mode, phase, error: error.message,
+      operation: spec?.operation ?? null, mode, phase, error: error.message,
       domain_combinations: combinations?.toString() ?? null, coverage, counterexample,
       executions, peak_queue: peak, boundary: BOUNDARY,
     };
@@ -189,30 +162,28 @@ export function verify(raw, { samples = null } = {}) {
   }
 }
 
-function assertSeparateFiles(modelPath, reportPath) {
-  const modelAbsolute = resolve(modelPath), reportAbsolute = resolve(reportPath);
-  assert(modelAbsolute !== reportAbsolute, 'Report path must not overwrite the model');
-  if (existsSync(modelAbsolute) && existsSync(reportAbsolute)) {
-    const a = statSync(modelAbsolute), b = statSync(reportAbsolute);
-    assert(a.dev !== b.dev || a.ino !== b.ino, 'Report path must not overwrite the model (symlink or hardlink alias)');
-  }
-  const canonicalPath = path => existsSync(path) ? realpathSync(path) : resolve(realpathSync(dirname(path)), basename(path));
-  assert(canonicalPath(modelAbsolute) !== canonicalPath(reportAbsolute), 'Report path must not overwrite the model (resolved path alias)');
-}
-
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [file, report, ...flags] = process.argv.slice(2);
   let canWriteReport = false, raw = null, phase = 'arguments';
   try {
-    assert(file && report, 'Usage: node verify.mjs MODEL.json REPORT.json [--samples N]');
+    assert(file && report, 'Usage: node verify.mjs MODEL.json REPORT.json [--spec SPEC.json] [--samples N]');
+    let specFile = specificationPath(file), samples = null;
+    const seenFlags = new Set();
+    for (let i = 0; i < flags.length; i += 2) {
+      assert(['--spec', '--samples'].includes(flags[i]) && flags[i + 1] && !seenFlags.has(flags[i]), 'Invalid or duplicate CLI option');
+      seenFlags.add(flags[i]);
+      if (flags[i] === '--spec') specFile = flags[i + 1];
+      else samples = Number(flags[i + 1]);
+    }
     phase = 'report-path';
     assertSeparateFiles(file, report);
+    assertSeparateFiles(specFile, report);
     canWriteReport = true;
-    phase = 'arguments';
-    assert(flags.length === 0 || flags.length === 2 && flags[0] === '--samples', 'Usage: node verify.mjs MODEL.json REPORT.json [--samples N]');
     phase = 'read-model';
     raw = JSON.parse(readFileSync(file, 'utf8'));
-    const result = verify(raw, { samples: flags.length ? Number(flags[1]) : null });
+    phase = 'read-specification';
+    const spec = JSON.parse(readFileSync(specFile, 'utf8'));
+    const result = verify(raw, { samples, spec });
     phase = 'write-report';
     writeFileSync(report, JSON.stringify(result, null, 2) + '\n');
     console.log(JSON.stringify(result));

@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "model_md5": "235713a7739b7ae16469d107fbcff702",
+  "model_format_md5": "62d247f3dccb0866c1550f4a70df70c8",
+  "specification_md5": "131a342acb8e51b5849c7dd99f8bdaa5",
+  "operation": "mul",
+  "operand_bits": [
+    8,
+    8
+  ],
+  "output_bits": 16,
+  "nodes": 352,
+  "stateful_nodes": 16,
+  "self_reference_nodes": 0,
+  "mode": "exhaustive",
+  "domain_combinations": "65536",
+  "truth_table_cases": 65536,
+  "repeated_send_cases": 3,
+  "reset_cases": 5,
+  "reload_cases": 5,
+  "executions": 23073248,
+  "peak_queue": 64,
+  "checks": [
+    "actual Xi.FIFO/Qi.FIFO engine, no reset between truth-table/sample and repeated-send vectors",
+    "fresh output publication exactly once per send",
+    "all output bits equal independent BigInt oracle",
+    "queue drained and arrival caches empty",
+    "reset restores initial runtime state, followed by five boundary vectors",
+    "JSON serialization/reparse and recompilation, followed by five boundary vectors"
+  ],
+  "boundary": "JKRD V4 static snapshots; complete input vectors, both FIFOs drained before the next send; bounded continuous executions from declared initial state. No proof of arbitrary interleaving, all state trajectories, full runtime checkpoint continuity or global optimality."
+}

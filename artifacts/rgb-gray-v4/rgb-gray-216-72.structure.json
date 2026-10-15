@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "scope": "JKRD V4.0.0 structure, state, ports, DAG, FIFOS, statistics and both fingerprints; no function/event-oracle proof",
+  "model_md5": "7cc2e8f48f53dd4017c3e3dc08ae2eb0",
+  "model_format_md5": "8d84caa789a3c11dd4e2aea2fc7194f6",
+  "nodes": 677,
+  "stateful_nodes": 306,
+  "queued_tasks": {
+    "Xi.FIFO": 0,
+    "Qi.FIFO": 0
+  }
+}

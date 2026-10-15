@@ -1,0 +1,100 @@
+{
+  "passed": true,
+  "rule_version": "V4.0.0",
+  "model": {
+    "md5": "7cc2e8f48f53dd4017c3e3dc08ae2eb0",
+    "format_md5": "8d84caa789a3c11dd4e2aea2fc7194f6",
+    "file_sha256": "229241c38e2971d3a2b3366a143c07caaac1f4feb71395dc105c0c2865c2cf84"
+  },
+  "files": {
+    ".json": {
+      "file": "rgb-gray-216-72.json",
+      "sha256": "229241c38e2971d3a2b3366a143c07caaac1f4feb71395dc105c0c2865c2cf84"
+    },
+    ".spec.json": {
+      "file": "rgb-gray-216-72.spec.json",
+      "sha256": "d0806ac593ee01c67e2042c9d906505cb35e49232106357fc297c433a4a41859"
+    },
+    ".optimization.json": {
+      "file": "rgb-gray-216-72.optimization.json",
+      "sha256": "03b87c4a3506f558dbb7eac6d76b65bf6030b5b1dd36204c62fa7321cdbaf792"
+    },
+    ".truth-table.json": {
+      "file": "rgb-gray-216-72.truth-table.json",
+      "sha256": "afcf349102c0f649cb1d6385a8a8e2bb1611cbde17adff675f96b20c6538d9dd"
+    },
+    ".verification.json": {
+      "file": "rgb-gray-216-72.verification.json",
+      "sha256": "c688e20948ab5a9ef9a9a5bd1e749ad6fb3292c0db116352b4df70eb103209e5"
+    },
+    ".pacing-check.json": {
+      "file": "rgb-gray-216-72.pacing-check.json",
+      "sha256": "a42bbcfe023270a45a00bb9e66df67d6ef1701a485fca0ad5a81f98b180f3f61"
+    },
+    ".structure.json": {
+      "file": "rgb-gray-216-72.structure.json",
+      "sha256": "a922ca84d4e30316cf5256ef3ab2d764cd18dc266e0582f9b981994d6b34c74e"
+    },
+    ".negative-tests.json": {
+      "file": "rgb-gray-216-72.negative-tests.json",
+      "sha256": "5ec9b89ef45fb966c58770c8c79b5ad6e6a1017b124939ce1ebf6b4dfd18d579"
+    }
+  },
+  "metrics": {
+    "nodes": 677,
+    "state_bits": 306,
+    "static_operations": 2763,
+    "executions_per_frame": 3226,
+    "operations_per_frame": 74163,
+    "output_events_per_bit": 9,
+    "initialization_executions": 0,
+    "core_executions_per_node": 9
+  },
+  "fifo": {
+    "completed_frames": 10933,
+    "coverage": {
+      "random_frames": 10000,
+      "edge_frames": 694,
+      "repeated_frames": 8,
+      "partial_frames": 12,
+      "missing_completion_frames": 216,
+      "reset_frames": 2,
+      "safe_snapshot_frames": 1,
+      "safe_snapshot_replayed_suffixes": 1
+    },
+    "peak_queue": 256,
+    "elapsed_seconds": 113.478612708,
+    "safe_snapshot_continuation": true
+  },
+  "numeric": {
+    "exhaustive_rgb_combinations": 16777216,
+    "elapsed_ms": 354.707917
+  },
+  "optimizations": {
+    "core_nodes": 146,
+    "core_minimum_proven_expressions": 134,
+    "core_not_proven_shortest": 12,
+    "audited_nodes": 677,
+    "conditional_rewrite_trace_frames": 20,
+    "delay_shortening_counterexample": {
+      "execution": 1060,
+      "ticket": 1060,
+      "node": "Q419",
+      "output": "Y6",
+      "pixel": 1,
+      "bit": 6,
+      "output_event_index": 1,
+      "expected": 1,
+      "observed": 0,
+      "before": 0,
+      "reads": {
+        "Q411": 1,
+        "Q234": 1
+      },
+      "selector": "Q234",
+      "gray_source": "Q411"
+    },
+    "global_optimum_proven": false
+  },
+  "evidence_boundary": "Only this newly generated V4 model and its declared frame protocol were tested. Historical 512-node results were not reused. No whole-project regression, frontend browser verification, deployment, or Git commit was performed."
+}

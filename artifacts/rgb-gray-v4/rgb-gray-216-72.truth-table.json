@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "verifier": "rgb-gray-v4-disk-core-v1",
+  "model": {
+    "md5": "7cc2e8f48f53dd4017c3e3dc08ae2eb0",
+    "format_md5": "8d84caa789a3c11dd4e2aea2fc7194f6",
+    "file_sha256": "229241c38e2971d3a2b3366a143c07caaac1f4feb71395dc105c0c2865c2cf84"
+  },
+  "spec_sha256": "d0806ac593ee01c67e2042c9d906505cb35e49232106357fc297c433a4a41859",
+  "implementation": {
+    "verifier_sha256": "09df93f759e2d57a0cb968ff1277da3c0521e10c7415aca60114358c35512cdc",
+    "evaluator_sha256": "082a399f3aeb659eb85f20c330515df5d51ef55262087cae18f04952a413a17d"
+  },
+  "scope": "Exhaustive numeric evaluation of the actual 24-bit shared arithmetic core in this saved model. Event/state scheduling is verified separately.",
+  "cases": 16777216,
+  "exhaustive": true,
+  "elapsed_ms": 354.707917
+}
